@@ -18,6 +18,7 @@ const connection = mysql.createConnection({
 connection.connect((err) => {
     if (err) {
         console.log("ERROR connecting to database. " + err);
+       // process.exit(0); //CHECK
     }
     console.log("connected as id " + connection.threadId);
     mainMenu();
@@ -74,6 +75,7 @@ async function addNewDept() {
     connection.query(insertQueryDept, answers.newDeptName, function (err, res) {
         if (err) {
             console.log("ERROR occurred during inserting new department into database. " + err);
+            connection.end();
         } else {
             console.log(`SUCCESS!!!! ${answers.newDeptName} has been added to department table`);
         }
@@ -88,6 +90,7 @@ function viewDept() {
     connection.query(selectQueryDept, function (err, res) {
         if (err) {
             console.log("ERROR occurred while retriving department data from database. " + err);
+            connection.end();
         } else {
             console.table(res);
         }
@@ -99,6 +102,7 @@ function addNewRole() {
     connection.query(selectQueryDept, function (err, res) {
         if (err) {
             console.log("Adding new role - ERROR occurred while retriving department data from database. " + err);
+            connection.end();
         } else {
             const deptArray = res.map((row) => row.dept_name);
             const answers = inquirer.prompt([
@@ -125,6 +129,7 @@ function addNewRole() {
                 connection.query(query, [answers.newRole, answers.newSalary, answers.dept], function (err, res) {
                     if (err) {
                         console.log("ERROR occurred during inserting new role into database. " + err);
+                        connection.end();
                     } else {
                         console.log(`SUCCESS!!!! ${answers.newRole} role in ${answers.dept} department has been added to Role table with ${answers.newSalary} salary`);
                     }
@@ -139,6 +144,7 @@ function viewRole(){
     connection.query(selectQueryRole, function (err, res) {
         if (err) {
             console.log("ERROR occurred while retriving Role data from database. " + err);
+            connection.end();
         } else {
             console.table(res);
         }
@@ -150,9 +156,14 @@ function viewEmp(){
     connection.query(selectQueryEmp, function (err, res) {
         if (err) {
             console.log("ERROR occurred while retriving Employee data from database. " + err);
+            connection.end();
         } else {
             console.table(res);
         }
         mainMenu();
     });
+}
+
+function addNewEmp(){
+
 }
