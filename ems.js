@@ -5,6 +5,7 @@ require("console.table");
 const selectQueryDept = "SELECT * FROM department";
 const insertQueryDept = "INSERT INTO department SET dept_name=?";
 const selectQueryRole =  "SELECT * FROM role";
+const selectQueryEmp = "SELECT * FROM employee";
 
 const connection = mysql.createConnection({
     host: "localhost",
@@ -138,6 +139,17 @@ function viewRole(){
     connection.query(selectQueryRole, function (err, res) {
         if (err) {
             console.log("ERROR occurred while retriving Role data from database. " + err);
+        } else {
+            console.table(res);
+        }
+        mainMenu();
+    });
+}
+
+function viewEmp(){
+    connection.query(selectQueryEmp, function (err, res) {
+        if (err) {
+            console.log("ERROR occurred while retriving Employee data from database. " + err);
         } else {
             console.table(res);
         }
