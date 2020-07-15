@@ -4,6 +4,7 @@ require("console.table");
 
 const selectQueryDept = "SELECT * FROM department";
 const insertQueryDept = "INSERT INTO department SET dept_name=?";
+const selectQueryRole =  "SELECT * FROM role";
 
 const connection = mysql.createConnection({
     host: "localhost",
@@ -128,13 +129,18 @@ function addNewRole() {
                     }
                     mainMenu();
                 }); 
-            })
-
-
+            });
         }
-        //   mainMenu();
     });
-
-
 }
 
+function viewRole(){
+    connection.query(selectQueryRole, function (err, res) {
+        if (err) {
+            console.log("ERROR occurred while retriving Role data from database. " + err);
+        } else {
+            console.table(res);
+        }
+        mainMenu();
+    });
+}
