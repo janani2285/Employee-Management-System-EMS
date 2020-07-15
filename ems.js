@@ -65,13 +65,25 @@ async function addNewDept() {
             name: "newDeptName"
         },
     ]);
-    console.log("answers.newDeptName--",answers.newDeptName)
+   
     const query = "INSERT INTO department SET dept_name=?";
     connection.query(query, answers.newDeptName, function (err, res) {
       if (err) {
         console.log("ERROR occurred during inserting new department into database. " + err);
         }else{
             console.log(`SUCCESS!!!! ${answers.newDeptName} has been added to department table`);
+        }
+        mainMenu();
+    });
+}
+
+function  viewDept(){
+    const query = "SELECT * FROM department";
+    connection.query(query, function (err, res) {
+      if (err) {
+        console.log("ERROR occurred while retriving department data from database. " + err);
+        }else{
+            console.table(res);
         }
         mainMenu();
     });
