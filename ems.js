@@ -160,7 +160,7 @@ function addNewRole() {
 }
 
 //Function to view Role
-function viewRole(){
+function viewRole() {
     const queryString = `
       SELECT
         role.role_id AS ID,
@@ -283,5 +283,77 @@ function viewEmp() {
             console.table(res);
         }
         mainMenu();
+    });
+}
+
+//Function to update Employee Role
+function updateEmpRole() {
+
+    connection.query(selectQueryEmp, function (err, res) {
+        if (err) {
+            console.log("Updating Employee Role - ERROR occurred while retriving employee data from database. " + err);
+            connection.end();
+        } else {
+            const empArray = [];
+            res.forEach((row) => {
+                //    console.log("row.role_id---",row.role_id)
+                empArray.push({
+                    name: row.first_name + " " + row.last_name,
+                    value: row.emp_id
+                });
+
+            });
+
+
+
+            connection.query(selectQueryRole, function (err, res) {
+                if (err) {
+                    console.log("Updating Employee Role - ERROR occurred while retriving role data from database. " + err);
+                    connection.end();
+                } else {
+                    const roleArray = [];
+                    res.forEach((row) => {
+                        //    console.log("row.role_id---",row.role_id)
+                        roleArray.push({
+                            name: row.title,
+                            value: row.role_id
+                        });
+
+                    });
+
+                    //   console.log("empArray-",empArray);
+                    const answers = inquirer.prompt([
+                        {
+                            type: "list",
+                            message: "Choose the employee you like to update the role for",
+                            choices: empArray,
+                            name: "emp"
+                        },
+                        {
+                            type: "list",
+                            message: "Choose the new role for the employee you choose",
+                            choices: roleArray,
+                            name: "role"
+                        }
+                    ]).then(answers => {
+                        // console.log("value-",answers.role);
+                        const query = `UPDATE employee
+                        SET role_id = ?
+                        WHERE emp_id = ?;`;
+
+                        connection.query(query, [answers.role, answers.emp], function (err, res) {
+                            if (err) {
+                                console.log("Updating Employee Role- ERROR occurred during updating new role for employee into database. " + err);
+                                connection.end();
+                            } else {
+                                console.log(`SUCCESS!!!! Employee, ${answers.firstName + " " + answers.lastName}'s role has been update`);
+                            }
+                            mainMenu();
+                        });
+                    });
+                }
+            });
+        }
+            
     });
 }
