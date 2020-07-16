@@ -83,7 +83,7 @@ async function addNewDept() {
 
     connection.query(insertQueryDept, answers.newDeptName, function (err, res) {
         if (err) {
-            console.log("ERROR occurred during inserting new department into database. " + err);
+            console.log("Adding New Department- ERROR occurred during inserting new department into database. " + err);
             connection.end();
         } else {
             console.log(`SUCCESS!!!! ${answers.newDeptName} has been added to department table`);
@@ -98,7 +98,7 @@ function viewDept() {
 
     connection.query(selectQueryDept, function (err, res) {
         if (err) {
-            console.log("ERROR occurred while retriving department data from database. " + err);
+            console.log("Viewing Department - ERROR occurred while retriving department data from database. " + err);
             connection.end();
         } else {
             console.table(res);
@@ -161,7 +161,7 @@ function viewRole(){
     `;
     connection.query(queryString, function (err, res) {
         if (err) {
-            console.log("ERROR occurred while retriving Role data from database. " + err);
+            console.log("Viewing Role - ERROR occurred while retriving Role data from database. " + err);
             connection.end();
         } else {
             console.table(res);
@@ -172,18 +172,21 @@ function viewRole(){
 
 function viewEmp(){
     const queryString = `
-      SELECT
-      employee.emp_id AS ID,
-        CONCAT(employee.first_name, " ", employee.last_name) AS Name,
+    SELECT
+      emp.emp_id AS ID,
+        CONCAT(emp.first_name, " ", emp.last_name) AS Name,
+         CONCAT(manager.first_name, " ", manager.last_name) AS Manager,
         role.title AS Role,
         department.dept_name AS Department
-      FROM employee
-      INNER JOIN role ON employee.emp_id = role.role_id
+      FROM employee emp
+      LEFT JOIN employee manager 
+       ON emp.manager_id = manager.emp_id
+      INNER JOIN role ON emp.role_id = role.role_id
       INNER JOIN department ON role.dept_id = department.dept_id;
     `;
     connection.query(queryString, function (err, res) {
         if (err) {
-            console.log("ERROR occurred while retriving Employee data from database. " + err);
+            console.log("Viewing Employee - ERROR occurred while retriving Employee data from database. " + err);
             connection.end();
         } else {
             console.table(res);
@@ -193,5 +196,90 @@ function viewEmp(){
 }
 
 function addNewEmp(){
+    connection.query(selectQueryRole, function (err, res) {
+        if (err) {
+            console.log("Adding new Employee - ERROR occurred while retriving role data from database. " + err);
+            connection.end();
+        } else {
+           // console.log("res---",res);
+            const roleArray =[];
+            res.forEach((row) => {
+            //    console.log("row.role_id---",row.role_id)
+                roleArray.push({
+                   name: row.title,
+                   value: row.role_id
+               } );
+               
+            });
+            
+            
 
+            connection.query(selectQueryEmp, function (err, res) {
+                if (err) {
+                    console.log("Adding new Employee - ERROR occurred while retriving employee data from database. " + err);
+                    connection.end();
+                } else {
+                    const empArray =[];
+                    res.forEach((row) => {
+                    //    console.log("row.role_id---",row.role_id)
+                        empArray.push({
+                           name: row.first_name+" "+row.last_name,
+                           value: row.emp_id
+                       } );
+                    
+                    });
+                    empArray.push({
+                        name: "No Manager",
+                        value: 0
+                    } );
+                 //   console.log("empArray-",empArray);
+                    const answers = inquirer.prompt([
+                        {
+                            type: "input",
+                            message: "Enter the new employee's first name:",
+                            name: "firstName"
+                        },
+                        {
+                            type: "input",
+                            message: "Enter the new employee's last name:",
+                            name: "lastName"
+                        },
+                        {
+                            type: "list",
+                            message: "Choose the role",
+                            choices: roleArray,
+                            name: "role"
+                        },
+                        {
+                            type: "list",
+                            message: "Choose the manager",
+                            choices: empArray,
+                            name: "manager"
+                        }
+                    ]).then(answers => {
+                       // console.log("value-",answers.role);
+                         const query = "INSERT INTO employee SET first_name=?, last_name=?, role_id=?, manager_id=?";
+        
+                        connection.query(query, [answers.firstName, answers.lastName, answers.role,answers.manager], function (err, res) {
+                            if (err) {
+                                console.log("Add New Employee - ERROR occurred during inserting new employee into database. " + err);
+                                connection.end();
+                            } else {
+                                console.log(`SUCCESS!!!! Employee, ${answers.firstName+" "+ answers.lastName} in ${answers.dept} has been added to employee table`);
+                            }
+                            mainMenu();
+                        }); 
+                    });
+
+
+
+
+
+                }
+            });
+
+
+           
+        }
+    });
 }
