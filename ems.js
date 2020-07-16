@@ -11,6 +11,7 @@ const ADD_EMP = "Add New Employee";
 const VIEW_EMP = "View Employee";
 const UPDATE_EMP_ROLE = "Update Employee Role";
 const VIEW_EMP_BY_MANAGER = "View employees by manager";
+const UPDATE_EMP_MANAGER = "Update employees's manager";
 const EXIT = "Exit";
 
 //Constants for SQL query
@@ -45,7 +46,7 @@ async function mainMenu() {
         {
             type: "list",
             message: "What would you like to do?",
-            choices: [ADD_DEPT, VIEW_DEPT, ADD_ROLE, VIEW_ROLE, ADD_EMP, VIEW_EMP, UPDATE_EMP_ROLE, VIEW_EMP_BY_MANAGER, EXIT],
+            choices: [ADD_DEPT, VIEW_DEPT, ADD_ROLE, VIEW_ROLE, ADD_EMP, VIEW_EMP, UPDATE_EMP_ROLE, VIEW_EMP_BY_MANAGER, UPDATE_EMP_MANAGER, EXIT],
             name: "userChoice"
         }
     ]);
@@ -73,6 +74,9 @@ async function mainMenu() {
             break;
         case VIEW_EMP_BY_MANAGER:
             viewEmpByManager();
+            break;
+        case UPDATE_EMP_MANAGER:
+            updateEmpManager();
             break;
         case "Exit":
             connection.end();
@@ -154,7 +158,7 @@ function addNewRole() {
                         console.log("ERROR occurred during inserting new role into database. " + err);
                         connection.end();
                     } else {
-                        console.log(`SUCCESS!!!! ${answers.newRole} role in ${answers.dept} department has been added to Role table with ${answers.newSalary} salary`);
+                        console.log(`SUCCESS!!!! New role - ${answers.newRole} has been added with ${answers.newSalary} salary`);
                     }
                     mainMenu();
                 });
@@ -253,7 +257,7 @@ function addNewEmp() {
                                 console.log("Add New Employee - ERROR occurred during inserting new employee into database. " + err);
                                 connection.end();
                             } else {
-                                console.log(`SUCCESS!!!! Employee, ${answers.firstName + " " + answers.lastName} in ${answers.dept} has been added to employee table`);
+                                console.log(`SUCCESS!!!! Employee, ${answers.firstName + " " + answers.lastName}  has been added to employee table`);
                             }
                             mainMenu();
                         });
@@ -335,7 +339,7 @@ function updateEmpRole() {
                         },
                         {
                             type: "list",
-                            message: "Choose the new role for the employee you choose",
+                            message: "Choose the new role for the employee you chose",
                             choices: roleArray,
                             name: "role"
                         }
@@ -350,7 +354,7 @@ function updateEmpRole() {
                                 console.log("Updating Employee Role- ERROR occurred during updating new role for employee into database. " + err);
                                 connection.end();
                             } else {
-                                console.log(`SUCCESS!!!! Employee, ${answers.firstName + " " + answers.lastName}'s role has been update`);
+                                console.log(`SUCCESS!!!! Employee's role has been update`);
                             }
                             mainMenu();
                         });
@@ -391,17 +395,17 @@ function viewEmpByManager() {
                 }
             ]).then(answers => {
                 let queryString = ``;
-                if(answers.manager === null){
-                    queryString= `SELECT CONCAT(emp.first_name, " ", emp.last_name) AS Employee
+                if (answers.manager === null) {
+                    queryString = `SELECT CONCAT(emp.first_name, " ", emp.last_name) AS Employee
                     FROM employee emp where emp.manager_id IS NULL;
                     `;
-                }else{
+                } else {
                     queryString = `SELECT CONCAT(emp.first_name, " ", emp.last_name) AS Employee
                  FROM employee emp where emp.manager_id = ?;
                  `;
                 }
-                
-                connection.query(queryString,answers.manager, function (err, res) {
+
+                connection.query(queryString, answers.manager, function (err, res) {
                     if (err) {
                         console.log("View Employee By Manager  - ERROR occurred while retriving Employee data from database. " + err);
                         connection.end();
@@ -412,5 +416,67 @@ function viewEmpByManager() {
                 });
             });
         }
+    });
+}
+
+
+//Function to update Employee Manager
+function updateEmpManager() {
+
+    connection.query(selectQueryEmp, function (err, res) {
+        if (err) {
+            console.log("Updating Employee Manager - ERROR occurred while retriving employee data from database. " + err);
+            connection.end();
+        } else {
+            const empArray = [];
+            res.forEach((row) => {
+                //    console.log("row.role_id---",row.role_id)
+                empArray.push({
+                    name: row.first_name + " " + row.last_name,
+                    value: row.emp_id
+                });
+
+            });
+
+            let managerArray = empArray.slice();
+            managerArray.push({
+                name: "Do not assign a manager",
+                value: null
+            });
+
+            //   console.log("empArray-",empArray);
+            const answers = inquirer.prompt([
+                {
+                    type: "list",
+                    message: "Choose the employee you like to update the manager for",
+                    choices: empArray,
+                    name: "emp"
+                },
+                {
+                    type: "list",
+                    message: "Choose the new manager for the employee",
+                    choices: managerArray,
+                    name: "manager"
+                }
+            ]).then(answers => {
+                // console.log("value-",answers.role);
+                const query = `UPDATE employee
+                        SET manager_id = ?
+                        WHERE emp_id = ?;`;
+
+                connection.query(query, [answers.manager, answers.emp], function (err, res) {
+                    if (err) {
+                        console.log("Updating Employee Manager- ERROR occurred during updating new manager for employee into database. " + err);
+                        connection.end();
+                    } else {
+                        console.log(`SUCCESS!!!! Employee's manager has been update`);
+                    }
+                    mainMenu();
+                });
+            });
+
+
+        }
+
     });
 }
