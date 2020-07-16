@@ -26,4 +26,7 @@ Run ``` npm run start ``` command in terminal(Mac) or command promt(windows) to 
 
 
 ## Screenshots
-<img src="images/1.png"><br>
+<img src="asserts/images/mainMenu.png"><br>
+<img src="asserts/images/dept.png"><br>
+<img src="asserts/images/roles.png"><br>
+<img src="asserts/images/employee.png"><br>
