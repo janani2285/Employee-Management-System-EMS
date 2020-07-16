@@ -10,6 +10,7 @@ const VIEW_ROLE = "View Roles";
 const ADD_EMP = "Add New Employee";
 const VIEW_EMP = "View Employee";
 const UPDATE_EMP_ROLE = "Update Employee Role";
+const VIEW_EMP_BY_MANAGER = "View employees by manager";
 const EXIT = "Exit";
 
 //Constants for SQL query
@@ -44,7 +45,7 @@ async function mainMenu() {
         {
             type: "list",
             message: "What would you like to do?",
-            choices: [ADD_DEPT, VIEW_DEPT, ADD_ROLE, VIEW_ROLE, ADD_EMP, VIEW_EMP, UPDATE_EMP_ROLE, EXIT],
+            choices: [ADD_DEPT, VIEW_DEPT, ADD_ROLE, VIEW_ROLE, ADD_EMP, VIEW_EMP, UPDATE_EMP_ROLE, VIEW_EMP_BY_MANAGER, EXIT],
             name: "userChoice"
         }
     ]);
@@ -69,6 +70,9 @@ async function mainMenu() {
             break;
         case UPDATE_EMP_ROLE:
             updateEmpRole();
+            break;
+        case VIEW_EMP_BY_MANAGER:
+            viewEmpByManager();
             break;
         case "Exit":
             connection.end();
@@ -213,8 +217,8 @@ function addNewEmp() {
 
                     });
                     empArray.push({
-                        name: "No Manager",
-                        value: 0
+                        name: "Do not assign a manager",
+                        value: null
                     });
                     //   console.log("empArray-",empArray);
                     const answers = inquirer.prompt([
@@ -354,6 +358,59 @@ function updateEmpRole() {
                 }
             });
         }
-            
+
+    });
+}
+
+//View employee by manager
+function viewEmpByManager() {
+
+    connection.query(selectQueryEmp, function (err, res) {
+        if (err) {
+            console.log("View Employee By Manager - ERROR occurred while retriving employee data from database. " + err);
+            connection.end();
+        } else {
+            const empArray = [];
+            res.forEach((row) => {
+                //    console.log("row.role_id---",row.role_id)
+                empArray.push({
+                    name: row.first_name + " " + row.last_name,
+                    value: row.emp_id
+                });
+            });
+            empArray.push({
+                name: "Employee with no manager",
+                value: null
+            });
+            const answers = inquirer.prompt([
+                {
+                    type: "list",
+                    message: "Choose the manager, whoes employee list you would like to view:",
+                    choices: empArray,
+                    name: "manager"
+                }
+            ]).then(answers => {
+                let queryString = ``;
+                if(answers.manager === null){
+                    queryString= `SELECT CONCAT(emp.first_name, " ", emp.last_name) AS Employee
+                    FROM employee emp where emp.manager_id IS NULL;
+                    `;
+                }else{
+                    queryString = `SELECT CONCAT(emp.first_name, " ", emp.last_name) AS Employee
+                 FROM employee emp where emp.manager_id = ?;
+                 `;
+                }
+                
+                connection.query(queryString,answers.manager, function (err, res) {
+                    if (err) {
+                        console.log("View Employee By Manager  - ERROR occurred while retriving Employee data from database. " + err);
+                        connection.end();
+                    } else {
+                        console.table(res);
+                    }
+                    mainMenu();
+                });
+            });
+        }
     });
 }
