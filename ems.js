@@ -171,7 +171,17 @@ function viewRole(){
 }
 
 function viewEmp(){
-    connection.query(selectQueryEmp, function (err, res) {
+    const queryString = `
+      SELECT
+      employee.emp_id AS ID,
+        CONCAT(employee.first_name, " ", employee.last_name) AS Name,
+        role.title AS Role,
+        department.dept_name AS Department
+      FROM employee
+      INNER JOIN role ON employee.emp_id = role.role_id
+      INNER JOIN department ON role.dept_id = department.dept_id;
+    `;
+    connection.query(queryString, function (err, res) {
         if (err) {
             console.log("ERROR occurred while retriving Employee data from database. " + err);
             connection.end();
