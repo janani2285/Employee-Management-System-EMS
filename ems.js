@@ -2,6 +2,15 @@ const mysql = require("mysql");
 const inquirer = require("inquirer");
 require("console.table");
 
+const ADD_DEPT = "Add New Department";
+const VIEW_DEPT = "View Departments";
+const ADD_ROLE = "Add New Role";
+const VIEW_ROLE = "View Roles";
+const ADD_EMP =  "Add New Employee";
+const VIEW_EMP = "View Employee";
+const UPDATE_EMP_ROLE = "Update Employee Role";
+const EXIT =  "Exit";
+
 const selectQueryDept = "SELECT * FROM department";
 const insertQueryDept = "INSERT INTO department SET dept_name=?";
 const selectQueryRole =  "SELECT * FROM role";
@@ -30,30 +39,30 @@ async function mainMenu() {
         {
             type: "list",
             message: "What would you like to do?",
-            choices: ["Add New Department", "View Departments", "Add New Role", "View Roles", "Add New Employee", "View Employee", "Update Employee Role", "Exit"],
+            choices: [ADD_DEPT, VIEW_DEPT, ADD_ROLE, VIEW_ROLE, ADD_EMP, VIEW_EMP, UPDATE_EMP_ROLE, EXIT],
             name: "userChoice"
         }
     ]);
     switch (answers.userChoice) {
-        case "Add New Department":
+        case ADD_DEPT:
             addNewDept();
             break;
-        case "View Departments":
+        case VIEW_DEPT:
             viewDept();
             break;
-        case "Add New Role":
+        case ADD_ROLE:
             addNewRole();
             break;
-        case "View Roles":
+        case VIEW_ROLE:
             viewRole();
             break;
-        case "Add New Employee":
+        case ADD_EMP:
             addNewEmp();
             break;
-        case "View Employee":
+        case VIEW_EMP:
             viewEmp();
             break;
-        case "Update Employee Role":
+        case UPDATE_EMP_ROLE:
             updateEmpRole();
             break;
         case "Exit":
@@ -141,7 +150,16 @@ function addNewRole() {
 }
 
 function viewRole(){
-    connection.query(selectQueryRole, function (err, res) {
+    const queryString = `
+      SELECT
+        role.role_id AS ID,
+        role.title AS Title,
+        role.salary AS Salary,
+        department.dept_name AS Department
+      FROM role
+      INNER JOIN department ON role.dept_id = department.dept_id;
+    `;
+    connection.query(queryString, function (err, res) {
         if (err) {
             console.log("ERROR occurred while retriving Role data from database. " + err);
             connection.end();
