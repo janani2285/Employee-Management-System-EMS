@@ -396,21 +396,41 @@ function viewEmpByManager() {
             ]).then(answers => {
                 let queryString = ``;
                 if (answers.manager === null) {
-                    queryString = `SELECT CONCAT(emp.first_name, " ", emp.last_name) AS Employee
-                    FROM employee emp where emp.manager_id IS NULL;
+                    queryString = `SELECT
+                    emp.emp_id AS ID,
+                      CONCAT(emp.first_name, " ", emp.last_name) AS Name,                     
+                      role.title AS Role,
+                      department.dept_name AS Department
+                    FROM employee emp 
+                    INNER JOIN role ON emp.role_id = role.role_id
+                    INNER JOIN department ON role.dept_id = department.dept_id where emp.manager_id is null;
                     `;
                 } else {
-                    queryString = `SELECT CONCAT(emp.first_name, " ", emp.last_name) AS Employee
-                 FROM employee emp where emp.manager_id = ?;
+                    queryString = `SELECT
+                    emp.emp_id AS ID,
+                      CONCAT(emp.first_name, " ", emp.last_name) AS Name,
+                       CONCAT(manager.first_name, " ", manager.last_name) AS Manager,
+                      role.title AS Role,
+                      department.dept_name AS Department
+                    FROM employee emp 
+                    RIGHT JOIN employee manager 
+                     ON emp.manager_id = ? and manager.emp_id =?
+                    INNER JOIN role ON emp.role_id = role.role_id
+                    INNER JOIN department ON role.dept_id = department.dept_id;
                  `;
                 }
 
-                connection.query(queryString, answers.manager, function (err, res) {
+                connection.query(queryString, [answers.manager, answers.manager], function (err, res) {
                     if (err) {
                         console.log("View Employee By Manager  - ERROR occurred while retriving Employee data from database. " + err);
                         connection.end();
                     } else {
-                        console.table(res);
+                        if(res.length === 0){
+                            console.log("Looks like the person you choos is either not a manager or no employees are assigned yet.");
+                        }else{
+                             console.table(res);
+                        }
+                       
                     }
                     mainMenu();
                 });
