@@ -14,7 +14,7 @@ This repository consists of code for an Employee Management System(EMS). This is
 - View employees by manager
 - Update employees's manager
 
-npm inquirer package is used for getting user input through command line and npm mysql package is used to connect to database and perform sql operations
+MYSQL is used to store data. npm inquirer package is used for getting user input through command line and npm mysql package is used to connect to database and perform sql operations
 
 Git is used for version controlling and for periodic commits to Gitlab.
 
@@ -24,6 +24,9 @@ Execute ``` npm install ``` command in terminal(Mac) or command promt(windows) t
 
 Run ``` npm run start ``` command in terminal(Mac) or command promt(windows) to start the application.
 
+## Demo
+
+[![EMS](asserts/images/preview.jpg)](http://www.youtube.com/watch?v=bDlck_fUiqQ "EMS-Demo")
 
 ## Screenshots
 <img src="asserts/images/mainMenu.png"><br>
